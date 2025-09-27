@@ -1,4 +1,4 @@
-package chatgpt
+package claude
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	cgtypes "github.com/muraduiurie/gpt/pkg/ai/types/chatgpt"
-	"github.com/muraduiurie/gpt/pkg/ai/types/common"
+	cltypes "github.com/muraduiurie/gpt/pkg/ai/types/claude"
+	"github.com/muraduiurie/gpt/pkg/ai/types/union"
 )
 
 type Client struct {
@@ -17,27 +17,34 @@ type Client struct {
 	TextInputEndpoint string
 }
 
-// AskAI sends a text request to the configured ChatGPT endpoint and returns
-// the parsed response. It validates inputs, performs the HTTP POST request,
-// and unmarshals the response body. An error is returned for invalid input,
-// network issues, or unexpected HTTP status codes.
-func (c *Client) AskAI(opts *common.Request) (*common.Response, error) {
-	if c == nil {
-		return nil, errors.New("nil client")
+func (c *Client) AskAI(opts *union.Request) (*union.Response, error) {
+	if c.TextInputEndpoint == "" {
+		c.TextInputEndpoint = "https://api.openai.com/v1/responses"
 	}
 	if opts == nil {
 		return nil, errors.New("nil opts")
 	}
-	textRequest, ok := opts.TextRequest.(*cgtypes.TextInputRequest)
+	textRequest, ok := opts.TextRequest.(*cltypes.TextInputRequest)
 	if !ok {
-		return nil, fmt.Errorf("*cgtypes.TextInputRequest type conversion failed")
+		return nil, fmt.Errorf("*cltypes.TextInputRequest type conversion failed")
 	}
 
-	if textRequest.Input == "" {
-		return nil, errors.New("message is required")
-	}
 	if textRequest.Model == "" {
-		return nil, errors.New("model is required")
+		textRequest.Model = cltypes.ClaudeAIModelSonnet4_20250514
+	}
+	if textRequest.MaxTokens == 0 {
+		textRequest.MaxTokens = 100
+	}
+	if len(textRequest.Messages) == 0 {
+		return nil, fmt.Errorf("messages is required")
+	}
+	for i, m := range textRequest.Messages {
+		if m.Role == "" {
+			textRequest.Messages[i].Role = cltypes.ClaudeAIRoleUser
+		}
+		if m.Content == "" {
+			return nil, fmt.Errorf("content in message is required")
+		}
 	}
 
 	body, err := opts.TextRequest.Marshal()
@@ -50,7 +57,8 @@ func (c *Client) AskAI(opts *common.Request) (*common.Response, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.ApiToken)
+	req.Header.Set("x-api-key", c.ApiToken)
+	req.Header.Set("anthropic-version", "2023-06-01")
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 	resp, err := httpClient.Do(req)
@@ -68,13 +76,13 @@ func (c *Client) AskAI(opts *common.Request) (*common.Response, error) {
 		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
 	}
 
-	var textResponse cgtypes.TextInputResponse
+	var textResponse cltypes.TextInputResponse
 	err = textResponse.Unmarshal(respBody)
 	if err != nil {
 		return nil, err
 	}
 
-	return &common.Response{
+	return &union.Response{
 		TextResponse: &textResponse,
 	}, nil
 }

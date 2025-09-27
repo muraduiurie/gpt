@@ -2,9 +2,32 @@ package chatgpt
 
 import "encoding/json"
 
+type (
+	ChatGPTAIModel string
+	ChatGPTAIRole  string
+)
+
+const (
+	// chatgpt models
+	AiModelGpt3_5_turbo_0301 ChatGPTAIModel = "gpt-3.5-turbo-0301"
+	AiModelGpt3_5_turbo_1106 ChatGPTAIModel = "gpt-3.5-turbo-1106"
+	AiModelGpt3_5_turbo      ChatGPTAIModel = "gpt-3.5-turbo"
+	AiModelGpt4o             ChatGPTAIModel = "gpt-4o"
+	AiModelGpt4_1            ChatGPTAIModel = "gpt-4.1"
+	AiModelGpt4oMini         ChatGPTAIModel = "gpt-4o-mini"
+	AiModelGpt4o_turbo       ChatGPTAIModel = "gpt-4-turbo"
+	AiModelTTS1              ChatGPTAIModel = "tts-1"
+	AiModelTTS1_HD           ChatGPTAIModel = "tts-1-hd"
+
+	// roles
+	ChatGPTAIRoleUser      ChatGPTAIRole = "user"
+	ChatGPTAIRoleAssistant ChatGPTAIRole = "assistant"
+	ChatGPTAIRoleSystem    ChatGPTAIRole = "system"
+)
+
 type TextInputRequest struct {
-	Model string `json:"model"`
-	Input string `json:"input"`
+	Model ChatGPTAIModel `json:"model"`
+	Input string         `json:"input"`
 }
 
 func (t *TextInputRequest) Marshal() ([]byte, error) {
@@ -24,22 +47,22 @@ type FileInputRequestContent struct {
 }
 
 type ImageInputRequestInput struct {
-	Role    string                     `json:"role"`
+	Role    ChatGPTAIRole              `json:"role"`
 	Content []ImageInputRequestContent `json:"content"`
 }
 
 type ImageInputRequest struct {
-	Model string                   `json:"model"`
+	Model ChatGPTAIModel           `json:"model"`
 	Input []ImageInputRequestInput `json:"input"`
 }
 
 type FileInputRequestInput struct {
-	Role    string                    `json:"role"`
+	Role    ChatGPTAIRole             `json:"role"`
 	Content []FileInputRequestContent `json:"content"`
 }
 
 type FileInputRequest struct {
-	Model string                  `json:"model"`
+	Model ChatGPTAIModel          `json:"model"`
 	Input []FileInputRequestInput `json:"input"`
 }
 
@@ -54,7 +77,7 @@ type ImageInputResponseOutput struct {
 	Type    string                      `json:"type"`
 	Id      string                      `json:"id"`
 	Status  string                      `json:"status"`
-	Role    string                      `json:"role"`
+	Role    ChatGPTAIRole               `json:"role"`
 	Content []ImageInputResponseContent `json:"content"`
 }
 
@@ -75,7 +98,7 @@ type ImageInputResponse struct {
 	IncompleteDetails  interface{}                `json:"incomplete_details"`
 	Instructions       interface{}                `json:"instructions"`
 	MaxOutputTokens    interface{}                `json:"max_output_tokens"`
-	Model              string                     `json:"model"`
+	Model              ChatGPTAIModel             `json:"model"`
 	Output             []ImageInputResponseOutput `json:"output"`
 	ParallelToolCalls  bool                       `json:"parallel_tool_calls"`
 	PreviousResponseId interface{}                `json:"previous_response_id"`
@@ -102,7 +125,7 @@ type TextInputResponseOutput struct {
 	Type    string                           `json:"type"`
 	Id      string                           `json:"id"`
 	Status  string                           `json:"status"`
-	Role    string                           `json:"role"`
+	Role    ChatGPTAIRole                    `json:"role"`
 	Content []TextInputResponseOutputContent `json:"content"`
 }
 
@@ -143,7 +166,7 @@ type TextInputResponse struct {
 	IncompleteDetails  interface{}               `json:"incomplete_details"`
 	Instructions       interface{}               `json:"instructions"`
 	MaxOutputTokens    interface{}               `json:"max_output_tokens"`
-	Model              string                    `json:"model"`
+	Model              ChatGPTAIModel            `json:"model"`
 	Output             []TextInputResponseOutput `json:"output"`
 	ParallelToolCalls  bool                      `json:"parallel_tool_calls"`
 	PreviousResponseId interface{}               `json:"previous_response_id"`
@@ -172,7 +195,7 @@ type FileInputResponseOutput struct {
 	Type    string                           `json:"type"`
 	Status  string                           `json:"status"`
 	Content []FileInputResponseOutputContent `json:"content"`
-	Role    string                           `json:"role"`
+	Role    ChatGPTAIRole                    `json:"role"`
 }
 
 type FileInputResponse struct {
@@ -186,7 +209,7 @@ type FileInputResponse struct {
 	Instructions       interface{}               `json:"instructions"`
 	MaxOutputTokens    interface{}               `json:"max_output_tokens"`
 	MaxToolCalls       interface{}               `json:"max_tool_calls"`
-	Model              string                    `json:"model"`
+	Model              ChatGPTAIModel            `json:"model"`
 	Output             []FileInputResponseOutput `json:"output"`
 	ParallelToolCalls  bool                      `json:"parallel_tool_calls"`
 	PreviousResponseId interface{}               `json:"previous_response_id"`

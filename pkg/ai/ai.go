@@ -4,32 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/muraduiurie/gpt/pkg/ai/types/common"
-	"github.com/muraduiurie/gpt/pkg/chatgpt"
+	"github.com/muraduiurie/gpt/pkg/ai/providers/chatgpt"
+	"github.com/muraduiurie/gpt/pkg/ai/providers/claude"
+	"github.com/muraduiurie/gpt/pkg/ai/providers/deepseek"
+	"github.com/muraduiurie/gpt/pkg/ai/types/union"
 	"github.com/spf13/viper"
 )
 
-type AiModel string
-
-const (
-	// chatgpt models
-	AiModelGpt3_5_turbo_0301 AiModel = "gpt-3.5-turbo-0301"
-	AiModelGpt3_5_turbo_1106 AiModel = "gpt-3.5-turbo-1106"
-	AiModelGpt3_5_turbo      AiModel = "gpt-3.5-turbo"
-	AiModelGpt4o             AiModel = "gpt-4o"
-	AiModelGpt4_1            AiModel = "gpt-4.1"
-	AiModelGpt4oMini         AiModel = "gpt-4o-mini"
-	AiModelGpt4o_turbo       AiModel = "gpt-4-turbo"
-	AiModelTTS1              AiModel = "tts-1"
-	AiModelTTS1_HD           AiModel = "tts-1-hd"
-
-	// dataseek models
-	AiModelDeepSeekChat     AiModel = "deepseek-chat"
-	AiModelDeepSeekReasoner AiModel = "deepseek-reasoner"
-)
-
 type AIAgent interface {
-	AskAI(opts *common.Request) (*common.Response, error)
+	AskAI(opts *union.Request) (*union.Response, error)
 }
 
 type Agent string
@@ -37,6 +20,7 @@ type Agent string
 const (
 	ChatGPTAgent  Agent = "chatgpt"
 	DeepSeekAgent Agent = "deepseek"
+	ClaudeAgent   Agent = "claude"
 )
 
 // NewAIAgent initializes and returns an AI agent implementation based on the
@@ -59,21 +43,38 @@ func NewAIAgent(agent Agent) (AIAgent, error) {
 	switch agent {
 	case ChatGPTAgent:
 		c := &chatgpt.Client{
-			ApiToken:          v.GetString("api_token"),
-			TextInputEndpoint: v.GetString("text_input_endpoint"),
+			ApiToken:          v.GetString("openai_api_token"),
+			TextInputEndpoint: v.GetString("openai_text_input_endpoint"),
 		}
 
 		if c.ApiToken == "" {
-			return nil, errors.New("missing API token: set `api_token` in `config.yaml` or `OPENAI_API_KEY`")
+			return nil, errors.New("missing API token: set `openai_api_token` in `config.yaml`")
+		}
+
+		return c, nil
+	case DeepSeekAgent:
+		c := &deepseek.Client{
+			ApiToken:          v.GetString("deepseek_api_token"),
+			TextInputEndpoint: v.GetString("deepseek_text_input_endpoint"),
+		}
+
+		if c.ApiToken == "" {
+			return nil, errors.New("missing API token: set `deepseek_api_token` in `config.yaml`")
+		}
+
+		return c, nil
+	case ClaudeAgent:
+		c := &claude.Client{
+			ApiToken:          v.GetString("claude_api_token"),
+			TextInputEndpoint: v.GetString("claude_text_input_endpoint"),
+		}
+
+		if c.ApiToken == "" {
+			return nil, errors.New("missing API token: set `claude_api_token` in `config.yaml`")
 		}
 
 		return c, nil
 	default:
 		return nil, fmt.Errorf("unknown ai agent: %s", agent)
 	}
-}
-
-type AiOpts struct {
-	Message string
-	Model   AiModel
 }

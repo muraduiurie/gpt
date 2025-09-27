@@ -1,4 +1,4 @@
-package common
+package union
 
 type Responser interface {
 	Unmarshal(b []byte) error
