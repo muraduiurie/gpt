@@ -52,7 +52,7 @@ import (
 )
 
 func ExampleChatGPT() error {
-    client, err := ai.NewAIAgent(ai.ChatGPTAgent)
+    client, err := ai.NewAIAgent(ai.ModelChatGPT)
     if err != nil {
         return err
     }
@@ -86,7 +86,7 @@ import (
 )
 
 func ExampleDeepSeek() error {
-    client, err := ai.NewAIAgent(ai.DeepSeekAgent)
+    client, err := ai.NewAIAgent(ai.ModelDeepSeek)
     if err != nil {
         return err
     }
@@ -122,7 +122,7 @@ import (
 )
 
 func ExampleClaude() error {
-    client, err := ai.NewAIAgent(ai.ClaudeAgent)
+    client, err := ai.NewAIAgent(ai.ModelClaude)
     if err != nil {
         return err
     }
