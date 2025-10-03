@@ -35,7 +35,7 @@ type AIOpts struct {
 func NewAIAgent(model Model, conf *AIOpts) (AIAgent, error) {
 
 	var token, endpoint string
-	if conf != nil {
+	if conf == nil {
 		v := viper.New()
 
 		// base config: `config.yaml` (optional)
