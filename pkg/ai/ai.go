@@ -23,28 +23,53 @@ const (
 	ModelClaude   Model = "claude"
 )
 
+type AIOpts struct {
+	ApiToken          string
+	TextInputEndpoint string
+}
+
 // NewAIAgent initializes and returns an AI agent implementation based on the
 // provided agent type. It reads configuration from `config.yaml` using Viper
 // and currently supports the `chatgpt` agent. Returns an error if the agent
 // type is unknown or required configuration (e.g., API token) is missing.
-func NewAIAgent(model Model) (AIAgent, error) {
+func NewAIAgent(model Model, conf *AIOpts) (AIAgent, error) {
 
-	v := viper.New()
+	var token, endpoint string
+	if conf != nil {
+		v := viper.New()
 
-	// base config: `config.yaml` (optional)
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath(".")
-	err := v.ReadInConfig()
-	if err != nil {
-		return nil, err
+		// base config: `config.yaml` (optional)
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+		v.AddConfigPath(".")
+		err := v.ReadInConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		switch model {
+		case ModelChatGPT:
+			token = v.GetString("openai_api_token")
+			endpoint = v.GetString("openai_text_input_endpoint")
+		case ModelDeepSeek:
+			token = v.GetString("deepseek_api_token")
+			endpoint = v.GetString("deepseek_text_input_endpoint")
+		case ModelClaude:
+			token = v.GetString("claude_api_token")
+			endpoint = v.GetString("claude_text_input_endpoint")
+		default:
+			return nil, fmt.Errorf("unknown ai model: %s", model)
+		}
+	} else {
+		token = conf.ApiToken
+		endpoint = conf.TextInputEndpoint
 	}
 
 	switch model {
 	case ModelChatGPT:
 		c := &chatgpt.Client{
-			ApiToken:          v.GetString("openai_api_token"),
-			TextInputEndpoint: v.GetString("openai_text_input_endpoint"),
+			ApiToken:          token,
+			TextInputEndpoint: endpoint,
 		}
 
 		if c.ApiToken == "" {
@@ -54,8 +79,8 @@ func NewAIAgent(model Model) (AIAgent, error) {
 		return c, nil
 	case ModelDeepSeek:
 		c := &deepseek.Client{
-			ApiToken:          v.GetString("deepseek_api_token"),
-			TextInputEndpoint: v.GetString("deepseek_text_input_endpoint"),
+			ApiToken:          token,
+			TextInputEndpoint: endpoint,
 		}
 
 		if c.ApiToken == "" {
@@ -65,8 +90,8 @@ func NewAIAgent(model Model) (AIAgent, error) {
 		return c, nil
 	case ModelClaude:
 		c := &claude.Client{
-			ApiToken:          v.GetString("claude_api_token"),
-			TextInputEndpoint: v.GetString("claude_text_input_endpoint"),
+			ApiToken:          token,
+			TextInputEndpoint: endpoint,
 		}
 
 		if c.ApiToken == "" {
