@@ -52,7 +52,7 @@ func (c *Client) AskAI(opts *union.Request) (*union.Response, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.ApiToken)
 
-	httpClient := &http.Client{Timeout: 30 * time.Second}
+	httpClient := &http.Client{Timeout: 300 * time.Second}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("do request: %w", err)

@@ -60,7 +60,7 @@ func (c *Client) AskAI(opts *union.Request) (*union.Response, error) {
 	req.Header.Set("x-api-key", c.ApiToken)
 	req.Header.Set("anthropic-version", "2023-06-01")
 
-	httpClient := &http.Client{Timeout: 30 * time.Second}
+	httpClient := &http.Client{Timeout: 300 * time.Second}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("do request: %w", err)

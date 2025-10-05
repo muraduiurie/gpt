@@ -1,6 +1,8 @@
 package chatgpt
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type (
 	ChatGPTAIModel string
